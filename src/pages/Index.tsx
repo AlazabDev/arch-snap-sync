@@ -2,15 +2,18 @@ import { Building2, FolderOpen, HardDrive, MessageSquare, Search, Bell } from 'l
 import AppLayout from '@/components/layout/AppLayout';
 import StatCard from '@/components/dashboard/StatCard';
 import ProjectCard from '@/components/dashboard/ProjectCard';
-import { projects, stats, formatFileSize } from '@/data/mockData';
+import { useProjects, useStats } from '@/hooks/useProjects';
+import { formatFileSize } from '@/data/mockData';
 import { useState } from 'react';
 
 export default function Index() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const { data: projects = [], isLoading } = useProjects();
+  const { data: stats } = useStats();
 
   const filtered = projects.filter(p => {
-    const matchesSearch = p.name.includes(search) || p.number.includes(search) || p.client.includes(search);
+    const matchesSearch = p.name.includes(search) || p.project_number.includes(search) || (p.client_name || '').includes(search);
     const matchesStatus = statusFilter === 'all' || p.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -27,17 +30,16 @@ export default function Index() {
           <div className="flex items-center gap-3">
             <button className="relative w-10 h-10 rounded-xl bg-card flex items-center justify-center hover:bg-muted transition-colors" style={{ boxShadow: 'var(--shadow-card)' }}>
               <Bell className="w-5 h-5 text-muted-foreground" />
-              <span className="absolute -top-1 -left-1 w-4 h-4 bg-accent rounded-full text-[10px] text-accent-foreground flex items-center justify-center font-bold">3</span>
             </button>
           </div>
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-          <StatCard label="المشاريع النشطة" value={stats.activeProjects} icon={Building2} color="accent" />
-          <StatCard label="إجمالي الملفات" value={stats.totalFiles.toLocaleString('ar-SA')} icon={FolderOpen} color="primary" />
-          <StatCard label="المساحة المستخدمة" value={formatFileSize(stats.totalStorage)} icon={HardDrive} color="success" />
-          <StatCard label="المحادثات النشطة" value={stats.activeConversations} icon={MessageSquare} color="info" />
+          <StatCard label="المشاريع النشطة" value={stats?.activeProjects ?? 0} icon={Building2} color="accent" />
+          <StatCard label="إجمالي الملفات" value={(stats?.totalFiles ?? 0).toLocaleString('ar-SA')} icon={FolderOpen} color="primary" />
+          <StatCard label="المساحة المستخدمة" value={formatFileSize(stats?.totalStorage ?? 0)} icon={HardDrive} color="success" />
+          <StatCard label="المحادثات النشطة" value={stats?.activeConversations ?? 0} icon={MessageSquare} color="info" />
         </div>
 
         {/* Search & Filter */}
@@ -71,16 +73,22 @@ export default function Index() {
         </div>
 
         {/* Projects Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filtered.map(project => (
-            <ProjectCard key={project.id} project={project} />
-          ))}
-        </div>
-        {filtered.length === 0 && (
-          <div className="text-center py-16 text-muted-foreground">
-            <Building2 className="w-12 h-12 mx-auto mb-3 opacity-50" />
-            <p>لا توجد مشاريع مطابقة</p>
-          </div>
+        {isLoading ? (
+          <div className="text-center py-16 text-muted-foreground">جارٍ التحميل...</div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filtered.map(project => (
+                <ProjectCard key={project.id} project={project} />
+              ))}
+            </div>
+            {filtered.length === 0 && (
+              <div className="text-center py-16 text-muted-foreground">
+                <Building2 className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                <p>لا توجد مشاريع بعد. ستظهر هنا عند استقبال ملفات من واتساب.</p>
+              </div>
+            )}
+          </>
         )}
       </div>
     </AppLayout>
