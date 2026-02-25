@@ -1,5 +1,6 @@
-import { Building2, FolderOpen, LayoutDashboard, Bell, BarChart3, Settings, FileText, MessageSquare } from 'lucide-react';
+import { Building2, FolderOpen, LayoutDashboard, Bell, BarChart3, Settings, FileText, MessageSquare, LogOut } from 'lucide-react';
 import { useLocation, Link } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 
 const navItems = [
   { label: 'لوحة التحكم', icon: LayoutDashboard, path: '/' },
@@ -14,6 +15,10 @@ const navItems = [
 
 export default function AppSidebar() {
   const location = useLocation();
+  const { user, signOut } = useAuth();
+
+  const displayName = user?.user_metadata?.full_name || user?.email || 'مستخدم';
+  const initials = displayName.charAt(0);
 
   return (
     <aside className="fixed top-0 right-0 h-screen w-64 flex flex-col z-40" style={{ background: 'var(--gradient-sidebar)' }}>
@@ -52,12 +57,19 @@ export default function AppSidebar() {
       <div className="p-4 border-t border-sidebar-border">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-full bg-sidebar-accent flex items-center justify-center text-sm font-bold text-sidebar-primary">
-            أ
+            {initials}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-sidebar-foreground truncate">م. أحمد الراشد</p>
-            <p className="text-xs text-sidebar-foreground/50">مهندس معماري</p>
+            <p className="text-sm font-medium text-sidebar-foreground truncate">{displayName}</p>
+            <p className="text-xs text-sidebar-foreground/50 truncate">{user?.email}</p>
           </div>
+          <button
+            onClick={signOut}
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-sidebar-foreground/50 hover:text-sidebar-foreground hover:bg-sidebar-accent transition-colors"
+            title="تسجيل الخروج"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
         </div>
       </div>
     </aside>
