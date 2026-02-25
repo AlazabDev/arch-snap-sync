@@ -1,9 +1,10 @@
 import { useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowRight, Camera, Video, Mic, FileText, Search, LayoutGrid, List, MapPin, Calendar } from 'lucide-react';
+import { ArrowRight, Camera, Video, Mic, FileText, Search, LayoutGrid, List, MapPin, Calendar, Upload } from 'lucide-react';
 import AppLayout from '@/components/layout/AppLayout';
 import MediaGrid from '@/components/project/MediaGrid';
 import FileViewer from '@/components/project/FileViewer';
+import FileUpload from '@/components/project/FileUpload';
 import { useProject, useProjectFiles } from '@/hooks/useProjects';
 import { formatDate, formatFileSize, getStatusLabel, getStatusClass, type FileType } from '@/data/mockData';
 
@@ -23,6 +24,7 @@ export default function ProjectDetail() {
   const [search, setSearch] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [selectedFile, setSelectedFile] = useState<any>(null);
+  const [showUpload, setShowUpload] = useState(false);
 
   // Map DB files to the format expected by MediaGrid/FileViewer
   const mappedFiles = useMemo(() => {
@@ -102,9 +104,16 @@ export default function ProjectDetail() {
                   {project.start_date && <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" />{formatDate(project.start_date)}</span>}
                 </div>
               </div>
-              <div className="text-left text-sm opacity-80">
-                {project.client_name && <p>{project.client_name}</p>}
-                <p>{mappedFiles.length} ملف</p>
+              <div className="text-left text-sm">
+                <button
+                  onClick={() => setShowUpload(true)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-accent text-accent-foreground font-medium hover:bg-accent/90 transition-colors mb-2"
+                >
+                  <Upload className="w-4 h-4" />
+                  رفع ملفات
+                </button>
+                {project.client_name && <p className="opacity-80">{project.client_name}</p>}
+                <p className="opacity-80">{mappedFiles.length} ملف</p>
               </div>
             </div>
           </div>
@@ -169,7 +178,6 @@ export default function ProjectDetail() {
           </div>
         )}
 
-        {/* File viewer modal */}
         {selectedFile && (
           <FileViewer
             file={selectedFile}
@@ -177,6 +185,10 @@ export default function ProjectDetail() {
             onClose={() => setSelectedFile(null)}
             onNavigate={setSelectedFile}
           />
+        )}
+
+        {showUpload && id && (
+          <FileUpload projectId={id} onClose={() => setShowUpload(false)} />
         )}
       </div>
     </AppLayout>

@@ -1,7 +1,8 @@
-import { Building2, FolderOpen, HardDrive, MessageSquare, Search, Bell } from 'lucide-react';
+import { Building2, FolderOpen, HardDrive, MessageSquare, Search, Bell, Plus } from 'lucide-react';
 import AppLayout from '@/components/layout/AppLayout';
 import StatCard from '@/components/dashboard/StatCard';
 import ProjectCard from '@/components/dashboard/ProjectCard';
+import CreateProject from '@/components/project/CreateProject';
 import { useProjects, useStats } from '@/hooks/useProjects';
 import { formatFileSize } from '@/data/mockData';
 import { useState } from 'react';
@@ -9,6 +10,7 @@ import { useState } from 'react';
 export default function Index() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [showCreate, setShowCreate] = useState(false);
   const { data: projects = [], isLoading } = useProjects();
   const { data: stats } = useStats();
 
@@ -28,8 +30,12 @@ export default function Index() {
             <p className="text-muted-foreground mt-1">نظرة شاملة على مشاريعك وملفاتك</p>
           </div>
           <div className="flex items-center gap-3">
-            <button className="relative w-10 h-10 rounded-xl bg-card flex items-center justify-center hover:bg-muted transition-colors" style={{ boxShadow: 'var(--shadow-card)' }}>
-              <Bell className="w-5 h-5 text-muted-foreground" />
+            <button
+              onClick={() => setShowCreate(true)}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-accent text-accent-foreground font-medium hover:bg-accent/90 transition-colors"
+            >
+              <Plus className="w-5 h-5" />
+              مشروع جديد
             </button>
           </div>
         </div>
@@ -90,6 +96,7 @@ export default function Index() {
             )}
           </>
         )}
+        {showCreate && <CreateProject onClose={() => setShowCreate(false)} />}
       </div>
     </AppLayout>
   );
