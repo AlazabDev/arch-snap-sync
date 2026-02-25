@@ -4,7 +4,8 @@ import { ArrowRight, Camera, Video, Mic, FileText, Search, LayoutGrid, List, Map
 import AppLayout from '@/components/layout/AppLayout';
 import MediaGrid from '@/components/project/MediaGrid';
 import FileViewer from '@/components/project/FileViewer';
-import { projects, projectFiles, formatDate, formatFileSize, getStatusLabel, getStatusClass, type ProjectFile, type FileType } from '@/data/mockData';
+import { useProject, useProjectFiles } from '@/hooks/useProjects';
+import { formatDate, formatFileSize, getStatusLabel, getStatusClass, type FileType } from '@/data/mockData';
 
 const typeFilters: { key: FileType | 'all'; label: string; icon: any }[] = [
   { key: 'all', label: 'الكل', icon: LayoutGrid },
@@ -16,18 +17,47 @@ const typeFilters: { key: FileType | 'all'; label: string; icon: any }[] = [
 
 export default function ProjectDetail() {
   const { id } = useParams();
-  const project = projects.find(p => p.id === id);
+  const { data: project, isLoading: projectLoading } = useProject(id);
+  const { data: dbFiles = [], isLoading: filesLoading } = useProjectFiles(id);
   const [typeFilter, setTypeFilter] = useState<FileType | 'all'>('all');
   const [search, setSearch] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [selectedFile, setSelectedFile] = useState<ProjectFile | null>(null);
+  const [selectedFile, setSelectedFile] = useState<any>(null);
+
+  // Map DB files to the format expected by MediaGrid/FileViewer
+  const mappedFiles = useMemo(() => {
+    return dbFiles.map(f => ({
+      id: f.id,
+      name: f.file_name,
+      type: f.file_type as FileType,
+      size: f.file_size || 0,
+      url: f.file_url,
+      thumbnail: f.thumbnail_url || (f.file_type === 'image' ? f.file_url : undefined),
+      uploadedAt: f.created_at,
+      sender: f.sender_name || 'غير معروف',
+      senderRole: 'contractor' as const,
+      projectId: f.project_id,
+      duration: f.duration_seconds || undefined,
+      pages: f.page_count || undefined,
+      width: f.width || undefined,
+      height: f.height || undefined,
+      comments: [],
+    }));
+  }, [dbFiles]);
 
   const files = useMemo(() => {
-    return projectFiles
-      .filter(f => f.projectId === id)
+    return mappedFiles
       .filter(f => typeFilter === 'all' || f.type === typeFilter)
       .filter(f => f.name.includes(search) || f.sender.includes(search));
-  }, [id, typeFilter, search]);
+  }, [mappedFiles, typeFilter, search]);
+
+  if (projectLoading) {
+    return (
+      <AppLayout>
+        <div className="flex items-center justify-center h-screen text-muted-foreground">جارٍ التحميل...</div>
+      </AppLayout>
+    );
+  }
 
   if (!project) {
     return (
@@ -49,8 +79,14 @@ export default function ProjectDetail() {
 
         {/* Project Header */}
         <div className="relative rounded-2xl overflow-hidden mb-8" style={{ boxShadow: 'var(--shadow-elevated)' }}>
-          <div className="h-48 overflow-hidden">
-            <img src={project.thumbnail} alt={project.name} className="w-full h-full object-cover" />
+          <div className="h-48 overflow-hidden bg-muted">
+            {project.thumbnail_url ? (
+              <img src={project.thumbnail_url} alt={project.name} className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <Camera className="w-16 h-16 text-muted-foreground/30" />
+              </div>
+            )}
             <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-foreground/30 to-transparent" />
           </div>
           <div className="absolute bottom-0 inset-x-0 p-6 text-primary-foreground">
@@ -58,17 +94,17 @@ export default function ProjectDetail() {
               <div>
                 <div className="flex items-center gap-3 mb-2">
                   <h1 className="text-2xl font-bold">{project.name}</h1>
-                  <span className={`badge-status ${getStatusClass(project.status)}`}>{getStatusLabel(project.status)}</span>
+                  <span className={`badge-status ${getStatusClass(project.status as any)}`}>{getStatusLabel(project.status as any)}</span>
                 </div>
                 <div className="flex items-center gap-4 text-sm opacity-80">
-                  <span>{project.number}</span>
-                  <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{project.location}</span>
-                  <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" />{formatDate(project.startDate)}</span>
+                  <span>{project.project_number}</span>
+                  {project.location && <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{project.location}</span>}
+                  {project.start_date && <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" />{formatDate(project.start_date)}</span>}
                 </div>
               </div>
               <div className="text-left text-sm opacity-80">
-                <p>{project.client}</p>
-                <p>{formatFileSize(project.totalSize)} مستخدمة</p>
+                {project.client_name && <p>{project.client_name}</p>}
+                <p>{mappedFiles.length} ملف</p>
               </div>
             </div>
           </div>
@@ -122,12 +158,14 @@ export default function ProjectDetail() {
         </div>
 
         {/* Files */}
-        {files.length > 0 ? (
+        {filesLoading ? (
+          <div className="text-center py-16 text-muted-foreground">جارٍ تحميل الملفات...</div>
+        ) : files.length > 0 ? (
           <MediaGrid files={files} onFileClick={setSelectedFile} viewMode={viewMode} />
         ) : (
           <div className="text-center py-16 text-muted-foreground">
             <Camera className="w-12 h-12 mx-auto mb-3 opacity-50" />
-            <p>لا توجد ملفات مطابقة</p>
+            <p>لا توجد ملفات بعد</p>
           </div>
         )}
 
