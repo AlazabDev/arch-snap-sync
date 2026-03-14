@@ -66,8 +66,8 @@ export default function Maintenance() {
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (statusFilter !== 'all') query = query.eq('status', statusFilter);
-      if (priorityFilter !== 'all') query = query.eq('priority', priorityFilter);
+      if (statusFilter !== 'all') query = query.eq('status', statusFilter as any);
+      if (priorityFilter !== 'all') query = query.eq('priority', priorityFilter as any);
 
       const { data, error } = await query;
       if (error) throw error;
