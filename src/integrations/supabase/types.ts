@@ -109,6 +109,84 @@ export type Database = {
           },
         ]
       }
+      maintenance_requests: {
+        Row: {
+          assigned_at: string | null
+          assigned_to: string | null
+          attachments: Json | null
+          building: string | null
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          fault_category: Database["public"]["Enums"]["fault_category"]
+          floor: string | null
+          id: string
+          priority: Database["public"]["Enums"]["maintenance_priority"]
+          requester_email: string | null
+          requester_name: string
+          requester_phone: string | null
+          resolution_notes: string | null
+          source: string
+          source_reference: string | null
+          status: Database["public"]["Enums"]["maintenance_status"]
+          ticket_number: string
+          title: string
+          unit: string | null
+          updated_at: string
+        }
+        Insert: {
+          assigned_at?: string | null
+          assigned_to?: string | null
+          attachments?: Json | null
+          building?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          fault_category?: Database["public"]["Enums"]["fault_category"]
+          floor?: string | null
+          id?: string
+          priority?: Database["public"]["Enums"]["maintenance_priority"]
+          requester_email?: string | null
+          requester_name: string
+          requester_phone?: string | null
+          resolution_notes?: string | null
+          source?: string
+          source_reference?: string | null
+          status?: Database["public"]["Enums"]["maintenance_status"]
+          ticket_number?: string
+          title: string
+          unit?: string | null
+          updated_at?: string
+        }
+        Update: {
+          assigned_at?: string | null
+          assigned_to?: string | null
+          attachments?: Json | null
+          building?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          fault_category?: Database["public"]["Enums"]["fault_category"]
+          floor?: string | null
+          id?: string
+          priority?: Database["public"]["Enums"]["maintenance_priority"]
+          requester_email?: string | null
+          requester_name?: string
+          requester_phone?: string | null
+          resolution_notes?: string | null
+          source?: string
+          source_reference?: string | null
+          status?: Database["public"]["Enums"]["maintenance_status"]
+          ticket_number?: string
+          title?: string
+          unit?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
@@ -373,6 +451,22 @@ export type Database = {
         | "contractor"
         | "client"
         | "viewer"
+      fault_category:
+        | "electrical"
+        | "plumbing"
+        | "hvac"
+        | "structural"
+        | "painting"
+        | "carpentry"
+        | "cleaning"
+        | "other"
+      maintenance_priority: "low" | "medium" | "high" | "urgent"
+      maintenance_status:
+        | "new"
+        | "assigned"
+        | "in_progress"
+        | "completed"
+        | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -507,6 +601,24 @@ export const Constants = {
         "contractor",
         "client",
         "viewer",
+      ],
+      fault_category: [
+        "electrical",
+        "plumbing",
+        "hvac",
+        "structural",
+        "painting",
+        "carpentry",
+        "cleaning",
+        "other",
+      ],
+      maintenance_priority: ["low", "medium", "high", "urgent"],
+      maintenance_status: [
+        "new",
+        "assigned",
+        "in_progress",
+        "completed",
+        "cancelled",
       ],
     },
   },

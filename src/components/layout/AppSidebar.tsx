@@ -1,4 +1,4 @@
-import { Building2, FolderOpen, LayoutDashboard, Bell, BarChart3, Settings, FileText, MessageSquare, LogOut } from 'lucide-react';
+import { Building2, FolderOpen, LayoutDashboard, Bell, BarChart3, Settings, FileText, MessageSquare, LogOut, Wrench } from 'lucide-react';
 import { useLocation, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -6,6 +6,7 @@ const navItems = [
   { label: 'لوحة التحكم', icon: LayoutDashboard, path: '/' },
   { label: 'المشاريع', icon: Building2, path: '/projects' },
   { label: 'جميع الملفات', icon: FolderOpen, path: '/files' },
+  { label: 'طلبات الصيانة', icon: Wrench, path: '/maintenance' },
   { label: 'المحادثات', icon: MessageSquare, path: '/conversations' },
   { label: 'الدفترة', icon: FileText, path: '/accounting' },
   { label: 'التقارير', icon: BarChart3, path: '/reports' },
