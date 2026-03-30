@@ -1,4 +1,4 @@
-import { Building2, FolderOpen, HardDrive, MessageSquare, Search, Bell, Plus } from 'lucide-react';
+import { Building2, FolderOpen, HardDrive, MessageSquare, Search, Plus, Wrench, AlertTriangle, Clock, CheckCircle2 } from 'lucide-react';
 import AppLayout from '@/components/layout/AppLayout';
 import StatCard from '@/components/dashboard/StatCard';
 import ProjectCard from '@/components/dashboard/ProjectCard';
@@ -6,6 +6,18 @@ import CreateProject from '@/components/project/CreateProject';
 import { useProjects, useStats } from '@/hooks/useProjects';
 import { formatFileSize } from '@/data/mockData';
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Link } from 'react-router-dom';
+
+const PRIORITY_MAP: Record<string, { label: string; color: string }> = {
+  low: { label: 'منخفضة', color: 'bg-muted text-muted-foreground' },
+  medium: { label: 'متوسطة', color: 'bg-accent/20 text-accent-foreground' },
+  high: { label: 'عالية', color: 'bg-orange-100 text-orange-700' },
+  urgent: { label: 'طارئة', color: 'bg-destructive/15 text-destructive' },
+};
 
 export default function Index() {
   const [search, setSearch] = useState('');
@@ -13,6 +25,32 @@ export default function Index() {
   const [showCreate, setShowCreate] = useState(false);
   const { data: projects = [], isLoading } = useProjects();
   const { data: stats } = useStats();
+
+  const { data: recentMaintenance = [] } = useQuery({
+    queryKey: ['recent-maintenance'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('maintenance_requests')
+        .select('id, ticket_number, title, status, priority, created_at')
+        .order('created_at', { ascending: false })
+        .limit(5);
+      return data || [];
+    },
+  });
+
+  const { data: maintenanceStats } = useQuery({
+    queryKey: ['maintenance-stats-dashboard'],
+    queryFn: async () => {
+      const { data } = await supabase.from('maintenance_requests').select('status');
+      const all = data || [];
+      return {
+        total: all.length,
+        new: all.filter(r => r.status === 'new').length,
+        inProgress: all.filter(r => r.status === 'in_progress' || r.status === 'assigned').length,
+        completed: all.filter(r => r.status === 'completed').length,
+      };
+    },
+  });
 
   const filtered = projects.filter(p => {
     const matchesSearch = p.name.includes(search) || p.project_number.includes(search) || (p.client_name || '').includes(search);
@@ -22,34 +60,76 @@ export default function Index() {
 
   return (
     <AppLayout>
-      <div className="p-8">
+      <div className="p-6 space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-foreground">لوحة التحكم</h1>
-            <p className="text-muted-foreground mt-1">نظرة شاملة على مشاريعك وملفاتك</p>
+            <p className="text-muted-foreground mt-1 text-sm">نظرة شاملة على مشاريعك وملفاتك</p>
           </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setShowCreate(true)}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-accent text-accent-foreground font-medium hover:bg-accent/90 transition-colors"
-            >
-              <Plus className="w-5 h-5" />
-              مشروع جديد
-            </button>
-          </div>
+          <button
+            onClick={() => setShowCreate(true)}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-accent text-accent-foreground font-medium hover:bg-accent/90 transition-colors"
+          >
+            <Plus className="w-5 h-5" />
+            مشروع جديد
+          </button>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <StatCard label="المشاريع النشطة" value={stats?.activeProjects ?? 0} icon={Building2} color="accent" />
           <StatCard label="إجمالي الملفات" value={(stats?.totalFiles ?? 0).toLocaleString('ar-SA')} icon={FolderOpen} color="primary" />
           <StatCard label="المساحة المستخدمة" value={formatFileSize(stats?.totalStorage ?? 0)} icon={HardDrive} color="success" />
-          <StatCard label="المحادثات النشطة" value={stats?.activeConversations ?? 0} icon={MessageSquare} color="info" />
+          <StatCard label="طلبات الصيانة" value={maintenanceStats?.total ?? 0} icon={Wrench} color="info" />
         </div>
 
+        {/* Maintenance Summary */}
+        {(maintenanceStats?.total ?? 0) > 0 && (
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Wrench className="w-5 h-5 text-accent" />
+                  آخر طلبات الصيانة
+                </CardTitle>
+                <Link to="/maintenance" className="text-sm text-accent hover:underline">
+                  عرض الكل ←
+                </Link>
+              </div>
+              <div className="flex gap-4 mt-2">
+                <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <AlertTriangle className="w-3 h-3 text-destructive" /> جديدة: {maintenanceStats?.new ?? 0}
+                </span>
+                <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <Clock className="w-3 h-3 text-accent" /> قيد التنفيذ: {maintenanceStats?.inProgress ?? 0}
+                </span>
+                <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <CheckCircle2 className="w-3 h-3 text-[hsl(var(--success))]" /> مكتملة: {maintenanceStats?.completed ?? 0}
+                </span>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="divide-y divide-border">
+                {recentMaintenance.map((req: any) => {
+                  const priority = PRIORITY_MAP[req.priority] || PRIORITY_MAP.medium;
+                  return (
+                    <Link key={req.id} to="/maintenance" className="flex items-center justify-between py-2.5 hover:bg-muted/30 -mx-2 px-2 rounded-lg transition-colors">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <span className="text-xs font-mono text-muted-foreground shrink-0">{req.ticket_number}</span>
+                        <span className="text-sm text-foreground truncate">{req.title}</span>
+                      </div>
+                      <Badge variant="outline" className={`${priority.color} text-xs shrink-0`}>{priority.label}</Badge>
+                    </Link>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Search & Filter */}
-        <div className="flex items-center gap-4 mb-6">
+        <div className="flex items-center gap-4">
           <div className="flex-1 relative">
             <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <input
