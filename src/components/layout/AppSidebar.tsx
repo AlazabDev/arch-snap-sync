@@ -1,6 +1,8 @@
 import { Building2, FolderOpen, LayoutDashboard, Bell, BarChart3, Settings, FileText, MessageSquare, LogOut, Wrench } from 'lucide-react';
 import { useLocation, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 const navItems = [
   { label: 'لوحة التحكم', icon: LayoutDashboard, path: '/' },
@@ -10,13 +12,26 @@ const navItems = [
   { label: 'المحادثات', icon: MessageSquare, path: '/conversations' },
   { label: 'الدفترة', icon: FileText, path: '/accounting' },
   { label: 'التقارير', icon: BarChart3, path: '/reports' },
-  { label: 'الإشعارات', icon: Bell, path: '/notifications' },
+  { label: 'الإشعارات', icon: Bell, path: '/notifications', badge: true },
   { label: 'الإعدادات', icon: Settings, path: '/settings' },
 ];
 
 export default function AppSidebar() {
   const location = useLocation();
   const { user, signOut } = useAuth();
+
+  const { data: unreadCount = 0 } = useQuery({
+    queryKey: ['unread-notifications-count'],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('notifications')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_read', false);
+      if (error) return 0;
+      return count || 0;
+    },
+    refetchInterval: 30000,
+  });
 
   const displayName = user?.user_metadata?.full_name || user?.email || 'مستخدم';
   const initials = displayName.charAt(0);
@@ -48,7 +63,12 @@ export default function AppSidebar() {
               className={`sidebar-link ${isActive ? 'active' : ''}`}
             >
               <item.icon className="w-5 h-5 shrink-0" />
-              <span>{item.label}</span>
+              <span className="flex-1">{item.label}</span>
+              {item.badge && unreadCount > 0 && (
+                <span className="bg-destructive text-destructive-foreground text-[10px] font-bold min-w-[18px] h-[18px] flex items-center justify-center rounded-full px-1">
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              )}
             </Link>
           );
         })}
