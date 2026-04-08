@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      cloud_storage_providers: {
+        Row: {
+          bucket_name: string
+          config: Json | null
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          name: string
+          provider_type: string
+          region: string | null
+          updated_at: string
+        }
+        Insert: {
+          bucket_name: string
+          config?: Json | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          provider_type: string
+          region?: string | null
+          updated_at?: string
+        }
+        Update: {
+          bucket_name?: string
+          config?: Json | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          provider_type?: string
+          region?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       daftra_transactions: {
         Row: {
           amount: number
