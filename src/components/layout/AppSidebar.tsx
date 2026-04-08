@@ -1,4 +1,4 @@
-import { Building2, FolderOpen, LayoutDashboard, Bell, BarChart3, Settings, FileText, MessageSquare, LogOut, Wrench } from 'lucide-react';
+import { Building2, FolderOpen, LayoutDashboard, Bell, BarChart3, Settings, FileText, MessageSquare, LogOut, Wrench, Cloud } from 'lucide-react';
 import { useLocation, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
@@ -11,6 +11,7 @@ const navItems = [
   { label: 'طلبات الصيانة', icon: Wrench, path: '/maintenance' },
   { label: 'المحادثات', icon: MessageSquare, path: '/conversations' },
   { label: 'الدفترة', icon: FileText, path: '/accounting' },
+  { label: 'التخزين السحابي', icon: Cloud, path: '/cloud-storage' },
   { label: 'التقارير', icon: BarChart3, path: '/reports' },
   { label: 'الإشعارات', icon: Bell, path: '/notifications', badge: true },
   { label: 'الإعدادات', icon: Settings, path: '/settings' },
