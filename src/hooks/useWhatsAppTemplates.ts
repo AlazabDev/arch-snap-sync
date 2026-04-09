@@ -19,8 +19,8 @@ export interface WhatsAppTemplate {
     value?: string;
   }>;
   status: "pending_review" | "approved" | "rejected" | "disabled";
-  createdAt: Date;
-  updatedAt: Date;
+  created_at?: Date;
+  updated_at?: Date;
 }
 
 export const useWhatsAppTemplates = () => {
@@ -53,61 +53,35 @@ export const useWhatsAppTemplates = () => {
     }
   }, []);
 
-  // إنشاء قالب جديد
-  const createTemplate = useCallback(async (template: Omit<WhatsAppTemplate, "id" | "createdAt" | "updatedAt">) => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const { data, error: supabaseError } = await supabase
-        .from("whatsapp_templates")
-        .insert([
-          {
-            ...template,
-            created_at: new Date(),
-            updated_at: new Date(),
-          },
-        ])
-        .select();
-
-      if (supabaseError) throw supabaseError;
-
-      // إرسال القالب إلى Meta للمراجعة
-      await submitTemplateToMeta(data[0]);
-
-      return { success: true, data: data[0] };
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "فشل إنشاء القالب";
-      setError(errorMessage);
-      return { success: false, error: errorMessage };
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  // تحديث القالب
-  const updateTemplate = useCallback(
-    async (id: string, updates: Partial<WhatsAppTemplate>) => {
+  // إنشاء قالب
+  const createTemplate = useCallback(
+    async (template: Omit<WhatsAppTemplate, "id">) => {
       setIsLoading(true);
       setError(null);
 
       try {
         const { data, error: supabaseError } = await supabase
           .from("whatsapp_templates")
-          .update({
-            ...updates,
-            updated_at: new Date(),
-          })
-          .eq("id", id)
+          .insert([
+            {
+              ...template,
+              created_at: new Date(),
+              updated_at: new Date(),
+            },
+          ])
           .select();
 
         if (supabaseError) throw supabaseError;
 
-        return { success: true, data: data[0] };
+        // إرسال إلى Meta
+        if (data?.[0]) {
+          await submitTemplateToMeta(data[0]);
+        }
+
+        return { success: true, data: data?.[0] };
       } catch (err) {
         const errorMessage =
-          err instanceof Error ? err.message : "فشل تحديث القالب";
+          err instanceof Error ? err.message : "فشل إنشاء القالب";
         setError(errorMessage);
         return { success: false, error: errorMessage };
       } finally {
@@ -130,6 +104,9 @@ export const useWhatsAppTemplates = () => {
 
       if (supabaseError) throw supabaseError;
 
+      // تحديث القائمة
+      setTemplates((prev) => prev.filter((t) => t.id !== id));
+
       return { success: true };
     } catch (err) {
       const errorMessage =
@@ -141,30 +118,34 @@ export const useWhatsAppTemplates = () => {
     }
   }, []);
 
-  // إرسال رسالة باستخدام قالب
+  // إرسال رسالة من قالب
   const sendTemplateMessage = useCallback(
-    async (templateId: string, phoneNumber: string, variables: Record<string, string> = {}) => {
+    async (
+      templateName: string,
+      phoneNumber: string,
+      variables: Record<string, string> = {}
+    ) => {
       setIsLoading(true);
       setError(null);
 
       try {
-        const response = await fetch("/api/whatsapp/send-template", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            templateId,
-            phoneNumber,
-            variables,
-          }),
-        });
+        const { data, error: functionError } = await supabase.functions.invoke(
+          "send-whatsapp-template",
+          {
+            body: {
+              templateName,
+              phoneNumber,
+              variables,
+            },
+          }
+        );
 
-        if (!response.ok) throw new Error("فشل إرسال الرسالة");
+        if (functionError) throw functionError;
 
-        const data = await response.json();
         return { success: true, data };
       } catch (err) {
         const errorMessage =
-          err instanceof Error ? err.message : "خطأ في الإرسال";
+          err instanceof Error ? err.message : "فشل إرسال الرسالة";
         setError(errorMessage);
         return { success: false, error: errorMessage };
       } finally {
@@ -180,28 +161,24 @@ export const useWhatsAppTemplates = () => {
     error,
     fetchTemplates,
     createTemplate,
-    updateTemplate,
     deleteTemplate,
     sendTemplateMessage,
   };
 };
 
-// إرسال القالب إلى Meta
 async function submitTemplateToMeta(template: WhatsAppTemplate) {
   try {
-    await fetch("/api/whatsapp/submit-template", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    await supabase.functions.invoke("submit-template-to-meta", {
+      body: {
         name: template.name,
         category: template.category,
         language: template.language,
         body: template.body,
-        header_type: template.headerType,
-        header_content: template.headerContent,
-        footer_text: template.footerText,
+        headerType: template.headerType,
+        headerContent: template.headerContent,
+        footerText: template.footerText,
         buttons: template.buttons,
-      }),
+      },
     });
   } catch (error) {
     console.error("Error submitting template to Meta:", error);
