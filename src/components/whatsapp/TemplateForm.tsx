@@ -235,7 +235,7 @@ export default function TemplateForm() {
             {((newButton.type as string) === "url" || (newButton.type as string) === "call") && (
               <div>
                 <label className="block text-sm font-medium mb-2">
-                  {newButton.type === "url" ? "الرابط" : "رقم الهاتف"}
+                  {(newButton.type as string) === "url" ? "الرابط" : "رقم الهاتف"}
                 </label>
                 <Input
                   value={newButton.value}
