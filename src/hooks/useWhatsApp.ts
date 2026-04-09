@@ -1,20 +1,17 @@
 // src/hooks/useWhatsApp.ts
 import { useCallback, useState } from "react";
 import { supabase } from "@/lib/supabase";
-
-interface WhatsAppConfig {
-  businessAccountId: string;
-  phoneNumberId: string;
-  accessToken: string;
-}
+import axios from "axios";
 
 interface WhatsAppMessage {
   id: string;
-  from: string;
-  to: string;
+  from?: string;
+  to?: string;
   message: string;
   timestamp: Date;
   status: "sent" | "delivered" | "read" | "failed";
+  type?: string;
+  media_url?: string;
 }
 
 export const useWhatsApp = () => {
@@ -22,70 +19,55 @@ export const useWhatsApp = () => {
   const [error, setError] = useState<string | null>(null);
   const [messages, setMessages] = useState<WhatsAppMessage[]>([]);
 
-  // ربط حساب WhatsApp Business
-  const linkWhatsAppAccount = useCallback(
-    async (config: WhatsAppConfig) => {
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        // حفظ البيانات في Supabase
-        const { data, error: supabaseError } = await supabase
-          .from("whatsapp_integrations")
-          .insert([
-            {
-              business_account_id: config.businessAccountId,
-              phone_number_id: config.phoneNumberId,
-              access_token: config.accessToken,
-              created_at: new Date(),
-              status: "active",
-            },
-          ])
-          .select();
-
-        if (supabaseError) throw supabaseError;
-
-        return { success: true, data };
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : "فشل ربط حساب WhatsApp";
-        setError(errorMessage);
-        return { success: false, error: errorMessage };
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    []
-  );
-
-  // إرسال رسالة WhatsApp
+  // إرسال رسالة نصية
   const sendWhatsAppMessage = useCallback(
     async (phoneNumber: string, message: string) => {
       setIsLoading(true);
       setError(null);
 
       try {
-        const response = await fetch("/api/whatsapp/send-message", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            phoneNumber,
-            message,
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error("فشل إرسال الرسالة");
+        // التحقق من صيغة الرقم
+        if (!phoneNumber.match(/^\+\d{1,15}$/)) {
+          throw new Error("صيغة الرقم غير صحيحة");
         }
 
-        const data = await response.json();
-        return { success: true, data };
+        // استدعاء الـ Edge Function من Supabase
+        const { data, error: functionError } = await supabase.functions.invoke(
+          "send-whatsapp-message",
+          {
+            body: {
+              phoneNumber,
+              message,
+              type: "text",
+            },
+          }
+        );
+
+        if (functionError) throw functionError;
+
+        // حفظ الرسالة في قاعدة البيانات
+        const { data: savedMessage, error: dbError } = await supabase
+          .from("whatsapp_messages")
+          .insert([
+            {
+              id: data.messageId,
+              to: phoneNumber,
+              message,
+              status: "sent",
+              type: "text",
+              timestamp: new Date(),
+            },
+          ])
+          .select();
+
+        if (dbError) throw dbError;
+
+        return { success: true, data: savedMessage?.[0] };
       } catch (err) {
         const errorMessage =
-          err instanceof Error ? err.message : "خطأ في إرسال الرسالة";
+          err instanceof Error ? err.message : "فشل إرسال الرسالة";
         setError(errorMessage);
+        console.error("Error sending message:", err);
         return { success: false, error: errorMessage };
       } finally {
         setIsLoading(false);
@@ -108,12 +90,19 @@ export const useWhatsApp = () => {
 
       if (supabaseError) throw supabaseError;
 
-      setMessages(data || []);
+      setMessages(
+        (data || []).map((msg) => ({
+          ...msg,
+          timestamp: new Date(msg.timestamp),
+        }))
+      );
+
       return { success: true, data };
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "فشل جلب الرسائل";
       setError(errorMessage);
+      console.error("Error fetching messages:", err);
       return { success: false, error: errorMessage };
     } finally {
       setIsLoading(false);
@@ -124,7 +113,6 @@ export const useWhatsApp = () => {
     isLoading,
     error,
     messages,
-    linkWhatsAppAccount,
     sendWhatsAppMessage,
     fetchMessages,
   };
