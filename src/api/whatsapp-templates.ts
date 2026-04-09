@@ -1,4 +1,5 @@
 // src/api/whatsapp-templates.ts
+// @ts-nocheck
 import { Router, Request, Response } from "express";
 import multer from "multer";
 

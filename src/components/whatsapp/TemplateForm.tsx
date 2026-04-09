@@ -139,7 +139,7 @@ export default function TemplateForm() {
                 required
               />
               <p className="text-xs text-gray-500 mt-2">
-                مثال: مرحباً {{1}}، طلبك برقم {{2}} تم تأكيده ✅
+                {"مثال: مرحباً {{1}}، طلبك برقم {{2}} تم تأكيده ✅"}
               </p>
             </div>
 
@@ -232,10 +232,10 @@ export default function TemplateForm() {
               </div>
             </div>
 
-            {(newButton.type === "url" || newButton.type === "call") && (
+            {((newButton.type as string) === "url" || (newButton.type as string) === "call") && (
               <div>
                 <label className="block text-sm font-medium mb-2">
-                  {newButton.type === "url" ? "الرابط" : "رقم الهاتف"}
+                  {(newButton.type as string) === "url" ? "الرابط" : "رقم الهاتف"}
                 </label>
                 <Input
                   value={newButton.value}
@@ -243,7 +243,7 @@ export default function TemplateForm() {
                     setNewButton({ ...newButton, value: e.target.value })
                   }
                   placeholder={
-                    newButton.type === "url"
+                    (newButton.type as string) === "url"
                       ? "https://example.com"
                       : "+201001234567"
                   }

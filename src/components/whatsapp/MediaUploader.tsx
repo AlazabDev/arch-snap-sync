@@ -15,7 +15,7 @@ export default function MediaUploader() {
     for (let file of files) {
       const type = getFileType(file);
       if (type) {
-        await uploadMedia({ file, type });
+        await uploadMedia(file, type);
       }
     }
     fetchMedia();
@@ -120,13 +120,13 @@ export default function MediaUploader() {
                       {(file.size / 1024 / 1024).toFixed(2)} MB
                     </p>
                     <p className="text-xs text-gray-400 mt-1">
-                      {new Date(file.uploadedAt).toLocaleDateString("ar-EG")}
+                      {file.uploaded_at ? new Date(file.uploaded_at).toLocaleDateString("ar-EG") : ""}
                     </p>
                   </div>
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => deleteMedia(file.id, file.mediaId)}
+                    onClick={() => deleteMedia(file.id, file.media_id || file.mediaId || "")}
                     className="text-red-500 hover:text-red-700"
                   >
                     <Trash2 className="w-4 h-4" />

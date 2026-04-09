@@ -1,7 +1,7 @@
 // src/components/whatsapp/WhatsAppAnalytics.tsx
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import {
   BarChart,
   Bar,

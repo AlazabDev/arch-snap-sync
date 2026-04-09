@@ -98,7 +98,7 @@ export default function WhatsAppIntegration() {
                     <p className="text-gray-700 mt-1">{msg.message}</p>
                   </div>
                   <span className="text-xs text-gray-500 whitespace-nowrap ml-2">
-                    {msg.timestamp}
+                    {String(msg.timestamp)}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 mt-2">
