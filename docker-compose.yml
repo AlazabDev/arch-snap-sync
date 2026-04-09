@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  app:
+    image: node:latest
+    working_dir: /var/www/apps/arch-snap-sync
+    volumes:
+      - /var/www/apps/arch-snap-sync:/var/www/apps/arch-snap-sync
+    ports:
+      - "8080:8080"
+    build:
+      context: .
+      dockerfile: Dockerfile
