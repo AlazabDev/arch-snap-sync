@@ -109,7 +109,7 @@ export const useWhatsAppMedia = () => {
               url: publicUrlData.publicUrl,
               mime_type: file.type,
               size: file.size,
-              uploaded_at: new Date(),
+              uploaded_at: new Date().toISOString(),
             },
           ])
           .select();
