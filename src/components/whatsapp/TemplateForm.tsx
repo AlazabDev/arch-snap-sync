@@ -232,7 +232,7 @@ export default function TemplateForm() {
               </div>
             </div>
 
-            {(newButton.type === "url" || newButton.type === "call") && (
+            {((newButton.type as string) === "url" || (newButton.type as string) === "call") && (
               <div>
                 <label className="block text-sm font-medium mb-2">
                   {newButton.type === "url" ? "الرابط" : "رقم الهاتف"}

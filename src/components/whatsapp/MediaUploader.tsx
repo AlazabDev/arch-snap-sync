@@ -120,7 +120,7 @@ export default function MediaUploader() {
                       {(file.size / 1024 / 1024).toFixed(2)} MB
                     </p>
                     <p className="text-xs text-gray-400 mt-1">
-                      {new Date(file.uploadedAt).toLocaleDateString("ar-EG")}
+                      {file.uploaded_at ? new Date(file.uploaded_at).toLocaleDateString("ar-EG") : ""}
                     </p>
                   </div>
                   <Button
