@@ -1,13 +1,23 @@
-version: '3'
+version: '3.8'
 
 services:
   app:
-    image: node:latest
-    working_dir: /var/www/apps/arch-snap-sync
-    volumes:
-      - /var/www/apps/arch-snap-sync:/var/www/apps/arch-snap-sync
-    ports:
-      - "8080:8080"
     build:
       context: .
       dockerfile: Dockerfile
+    container_name: arch-snap-sync
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /var/www/certbot:/var/www/certbot:ro
+    environment:
+      - NODE_ENV=production
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
