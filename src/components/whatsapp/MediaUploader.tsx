@@ -126,7 +126,7 @@ export default function MediaUploader() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => deleteMedia(file.id, file.mediaId)}
+                    onClick={() => deleteMedia(file.id, file.media_id || file.mediaId || "")}
                     className="text-red-500 hover:text-red-700"
                   >
                     <Trash2 className="w-4 h-4" />
