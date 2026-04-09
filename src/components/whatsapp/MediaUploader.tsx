@@ -15,7 +15,7 @@ export default function MediaUploader() {
     for (let file of files) {
       const type = getFileType(file);
       if (type) {
-        await uploadMedia({ file, type });
+        await uploadMedia(file, type);
       }
     }
     fetchMedia();
