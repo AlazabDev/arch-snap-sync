@@ -4,12 +4,16 @@ import { supabase } from "@/integrations/supabase/client";
 
 export interface WhatsAppMedia {
   id: string;
-  mediaId: string;
-  type: "image" | "document" | "video" | "audio";
+  media_id: string;
+  mediaId?: string;
+  type: string;
   url: string;
-  mimeType: string;
+  mime_type?: string;
+  mimeType?: string;
   size: number;
-  uploaded_at?: Date;
+  uploaded_at?: string;
+  caption?: string;
+  integration_id?: string;
 }
 
 export const useWhatsAppMedia = () => {
