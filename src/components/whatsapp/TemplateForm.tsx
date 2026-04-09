@@ -243,7 +243,7 @@ export default function TemplateForm() {
                     setNewButton({ ...newButton, value: e.target.value })
                   }
                   placeholder={
-                    newButton.type === "url"
+                    (newButton.type as string) === "url"
                       ? "https://example.com"
                       : "+201001234567"
                   }
