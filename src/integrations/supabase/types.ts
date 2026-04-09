@@ -469,11 +469,189 @@ export type Database = {
         }
         Relationships: []
       }
+      whatsapp_integrations: {
+        Row: {
+          access_token: string
+          business_account_id: string
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          phone_number_id: string
+          status: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          access_token: string
+          business_account_id: string
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          phone_number_id: string
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          access_token?: string
+          business_account_id?: string
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          phone_number_id?: string
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      whatsapp_media: {
+        Row: {
+          caption: string | null
+          id: string
+          integration_id: string | null
+          media_id: string
+          mime_type: string | null
+          size: number | null
+          type: string
+          uploaded_at: string | null
+          url: string
+        }
+        Insert: {
+          caption?: string | null
+          id?: string
+          integration_id?: string | null
+          media_id: string
+          mime_type?: string | null
+          size?: number | null
+          type: string
+          uploaded_at?: string | null
+          url: string
+        }
+        Update: {
+          caption?: string | null
+          id?: string
+          integration_id?: string | null
+          media_id?: string
+          mime_type?: string | null
+          size?: number | null
+          type?: string
+          uploaded_at?: string | null
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_media_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "whatsapp_integrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      whatsapp_messages: {
+        Row: {
+          created_at: string | null
+          id: string
+          integration_id: string | null
+          media_url: string | null
+          message: string
+          status: string | null
+          timestamp: string
+          type: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id: string
+          integration_id?: string | null
+          media_url?: string | null
+          message: string
+          status?: string | null
+          timestamp: string
+          type?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          integration_id?: string | null
+          media_url?: string | null
+          message?: string
+          status?: string | null
+          timestamp?: string
+          type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_messages_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "whatsapp_integrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      whatsapp_templates: {
+        Row: {
+          body: string
+          created_at: string | null
+          id: string
+          integration_id: string | null
+          name: string
+          status: string | null
+          template_id: string | null
+          variables: Json | null
+        }
+        Insert: {
+          body: string
+          created_at?: string | null
+          id?: string
+          integration_id?: string | null
+          name: string
+          status?: string | null
+          template_id?: string | null
+          variables?: Json | null
+        }
+        Update: {
+          body?: string
+          created_at?: string | null
+          id?: string
+          integration_id?: string | null
+          name?: string
+          status?: string | null
+          template_id?: string | null
+          variables?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_templates_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "whatsapp_integrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      get_daily_message_counts: {
+        Args: { days?: number }
+        Returns: {
+          count: number
+          date: string
+        }[]
+      }
+      get_message_status_counts: {
+        Args: never
+        Returns: {
+          delivered: number
+          failed: number
+          read: number
+          sent: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
