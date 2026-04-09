@@ -139,7 +139,7 @@ export default function TemplateForm() {
                 required
               />
               <p className="text-xs text-gray-500 mt-2">
-                مثال: مرحباً {{1}}، طلبك برقم {{2}} تم تأكيده ✅
+                {"مثال: مرحباً {{1}}، طلبك برقم {{2}} تم تأكيده ✅"}
               </p>
             </div>
 
