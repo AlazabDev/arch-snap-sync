@@ -19,6 +19,7 @@ import ProjectDetail from "./pages/ProjectDetail";
 import Maintenance from "./pages/Maintenance";
 import CloudStorage from "./pages/CloudStorage";
 import NotFound from "./pages/NotFound";
+import WhatsAppDashboard from "./pages/WhatsAppDashboard";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +44,7 @@ const App = () => (
             <Route path="/project/:id" element={<ProtectedRoute><ProjectDetail /></ProtectedRoute>} />
             <Route path="/maintenance" element={<ProtectedRoute><Maintenance /></ProtectedRoute>} />
             <Route path="/cloud-storage" element={<ProtectedRoute><CloudStorage /></ProtectedRoute>} />
+            <Route path="/whatsapp" element={<ProtectedRoute><WhatsAppDashboard /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
