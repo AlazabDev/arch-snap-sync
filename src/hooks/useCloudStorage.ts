@@ -20,6 +20,7 @@ export interface StorageObject {
   key: string;
   size: number;
   last_modified: string;
+  content_type?: string;
 }
 
 export function useCloudProviders() {
@@ -59,6 +60,28 @@ export function useAddProvider() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["cloud-providers"] });
       toast({ title: "تم إضافة المزود بنجاح" });
+    },
+    onError: (err: any) => {
+      toast({ title: "خطأ", description: err.message, variant: "destructive" });
+    },
+  });
+}
+
+export function useUpdateProvider() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ id, ...updates }: { id: string; name?: string; bucket_name?: string; region?: string; config?: Record<string, any> }) => {
+      const { error } = await supabase
+        .from("cloud_storage_providers")
+        .update(updates)
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["cloud-providers"] });
+      toast({ title: "تم تحديث المزود" });
     },
     onError: (err: any) => {
       toast({ title: "خطأ", description: err.message, variant: "destructive" });
@@ -155,6 +178,82 @@ export function useDeleteObject() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["cloud-objects"] });
       toast({ title: "تم حذف الملف" });
+    },
+  });
+}
+
+export function useUploadObject() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ providerId, key, file }: { providerId: string; key: string; file: File }) => {
+      const reader = new FileReader();
+      const base64 = await new Promise<string>((resolve, reject) => {
+        reader.onload = () => resolve((reader.result as string).split(",")[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const { data, error } = await supabase.functions.invoke("cloud-storage", {
+        body: {
+          action: "upload-object",
+          provider_id: providerId,
+          key,
+          content: base64,
+          content_type: file.type,
+        },
+      });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["cloud-objects"] });
+      toast({ title: "تم رفع الملف بنجاح ✅" });
+    },
+    onError: (err: any) => {
+      toast({ title: "فشل الرفع", description: err.message, variant: "destructive" });
+    },
+  });
+}
+
+export function useGetSignedUrl() {
+  return useMutation({
+    mutationFn: async ({ providerId, key }: { providerId: string; key: string }) => {
+      const { data, error } = await supabase.functions.invoke("cloud-storage", {
+        body: { action: "get-signed-url", provider_id: providerId, key },
+      });
+      if (error) throw error;
+      return data as { url: string };
+    },
+  });
+}
+
+export function useCreateFolder() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ providerId, path }: { providerId: string; path: string }) => {
+      const folderKey = path.endsWith("/") ? path : path + "/";
+      const { data, error } = await supabase.functions.invoke("cloud-storage", {
+        body: {
+          action: "upload-object",
+          provider_id: providerId,
+          key: folderKey,
+          content: "",
+          content_type: "application/x-directory",
+        },
+      });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["cloud-objects"] });
+      toast({ title: "تم إنشاء المجلد" });
+    },
+    onError: (err: any) => {
+      toast({ title: "خطأ", description: err.message, variant: "destructive" });
     },
   });
 }
