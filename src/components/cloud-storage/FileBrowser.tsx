@@ -130,6 +130,20 @@ export default function FileBrowser({ providerId, onBack }: Props) {
     );
   };
 
+  const handlePreviewPdf = (key: string) => {
+    const fileName = key.split("/").pop() || key;
+    getSignedUrl.mutate(
+      { providerId, key },
+      {
+        onSuccess: (data) => {
+          setPdfPreview({ url: data.url, name: fileName });
+        },
+      }
+    );
+  };
+
+  const isPdf = (key: string) => key.toLowerCase().endsWith(".pdf");
+
   const handleCreateFolder = () => {
     if (!newFolderName.trim()) return;
     createFolder.mutate(
