@@ -237,9 +237,38 @@ export default function Auth() {
               disabled={loading}
               className="w-full bg-accent text-accent-foreground rounded-xl py-3 font-medium hover:bg-accent/90 transition-colors disabled:opacity-50"
             >
-              {loading ? 'جارٍ المعالجة...' : mode === 'login' ? 'دخول' : 'تسجيل'}
+            {loading ? 'جارٍ المعالجة...' : mode === 'login' ? 'دخول' : 'تسجيل'}
             </button>
           </form>
+
+          {mode === 'login' && (
+            <>
+              <div className="relative my-4">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-border" />
+                </div>
+                <div className="relative flex justify-center text-xs">
+                  <span className="bg-card px-3 text-muted-foreground">أو جرّب</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail('demo@alazab.com');
+                  setPassword('demo123456');
+                  setTimeout(() => {
+                    const form = document.querySelector('form');
+                    form?.requestSubmit();
+                  }, 100);
+                }}
+                disabled={loading}
+                className="w-full flex items-center justify-center gap-2 bg-muted border border-border rounded-xl py-3 font-medium text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors disabled:opacity-50"
+              >
+                <User className="w-4 h-4" />
+                الدخول كمستخدم تجريبي
+              </button>
+            </>
+          )}
 
           <div className="mt-6 text-center">
             <button
