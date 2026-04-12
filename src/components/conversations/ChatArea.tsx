@@ -50,7 +50,7 @@ function StatusIcon({ status }: { status: ChatMessage['status'] }) {
   if (status === 'sending') return <span className="text-muted-foreground text-[10px]">⏳</span>;
   if (status === 'sent') return <Check className="w-3.5 h-3.5 text-muted-foreground" />;
   if (status === 'delivered') return <CheckCheck className="w-3.5 h-3.5 text-muted-foreground" />;
-  if (status === 'read') return <CheckCheck className="w-3.5 h-3.5 text-blue-500" />;
+  if (status === 'read') return <CheckCheck className="w-3.5 h-3.5 text-accent" />;
   if (status === 'failed') return <X className="w-3.5 h-3.5 text-destructive" />;
   return null;
 }
@@ -211,15 +211,15 @@ export default function ChatArea({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" side="top" className="w-48">
               <DropdownMenuItem onClick={() => imageInputRef.current?.click()}>
-                <ImageIcon className="w-4 h-4 ml-2 text-green-500" />
+                <ImageIcon className="w-4 h-4 ml-2 text-accent" />
                 صورة
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => fileInputRef.current?.click()}>
-                <FileText className="w-4 h-4 ml-2 text-blue-500" />
+                <FileText className="w-4 h-4 ml-2 text-primary" />
                 مستند
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => fileInputRef.current?.click()}>
-                <Video className="w-4 h-4 ml-2 text-purple-500" />
+                <Video className="w-4 h-4 ml-2 text-muted-foreground" />
                 فيديو
               </DropdownMenuItem>
             </DropdownMenuContent>

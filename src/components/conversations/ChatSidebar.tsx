@@ -81,7 +81,7 @@ export default function ChatSidebar({
                   {contact.name.charAt(0)}
                 </div>
                 {contact.isOnline && (
-                  <Circle className="absolute bottom-0 left-0 w-3.5 h-3.5 fill-green-500 text-green-500" />
+                  <Circle className="absolute bottom-0 left-0 w-3.5 h-3.5 fill-accent text-accent" />
                 )}
               </div>
               <div className="flex-1 min-w-0">
