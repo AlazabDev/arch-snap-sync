@@ -41,6 +41,7 @@ import {
   Eye,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import PdfViewer from "./PdfViewer";
 
 interface Props {
   providerId: string;
@@ -81,6 +82,7 @@ export default function FileBrowser({ providerId, onBack }: Props) {
   const [newFolderName, setNewFolderName] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [pdfPreview, setPdfPreview] = useState<{ url: string; name: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data, isLoading, refetch } = useListObjects(providerId, prefix);
@@ -127,6 +129,20 @@ export default function FileBrowser({ providerId, onBack }: Props) {
       }
     );
   };
+
+  const handlePreviewPdf = (key: string) => {
+    const fileName = key.split("/").pop() || key;
+    getSignedUrl.mutate(
+      { providerId, key },
+      {
+        onSuccess: (data) => {
+          setPdfPreview({ url: data.url, name: fileName });
+        },
+      }
+    );
+  };
+
+  const isPdf = (key: string) => key.toLowerCase().endsWith(".pdf");
 
   const handleCreateFolder = () => {
     if (!newFolderName.trim()) return;
@@ -318,6 +334,23 @@ export default function FileBrowser({ providerId, onBack }: Props) {
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {isPdf(file.key) && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-7 w-7 text-primary"
+                                onClick={() => handlePreviewPdf(file.key)}
+                              >
+                                <Eye className="w-3 h-3" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>معاينة وتوقيع</TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
@@ -401,6 +434,16 @@ export default function FileBrowser({ providerId, onBack }: Props) {
                 <span className="text-[10px] text-muted-foreground">{formatSize(file.size)}</span>
                 {/* Hover actions */}
                 <div className="absolute top-1 left-1 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {isPdf(file.key) && (
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-6 w-6 text-primary"
+                      onClick={() => handlePreviewPdf(file.key)}
+                    >
+                      <Eye className="w-3 h-3" />
+                    </Button>
+                  )}
                   <Button
                     size="icon"
                     variant="ghost"
@@ -534,6 +577,16 @@ export default function FileBrowser({ providerId, onBack }: Props) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* PDF Viewer */}
+      {pdfPreview && (
+        <PdfViewer
+          open={!!pdfPreview}
+          onOpenChange={(open) => !open && setPdfPreview(null)}
+          pdfUrl={pdfPreview.url}
+          fileName={pdfPreview.name}
+        />
+      )}
     </div>
   );
 }
