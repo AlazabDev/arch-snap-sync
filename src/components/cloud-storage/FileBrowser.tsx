@@ -434,6 +434,16 @@ export default function FileBrowser({ providerId, onBack }: Props) {
                 <span className="text-[10px] text-muted-foreground">{formatSize(file.size)}</span>
                 {/* Hover actions */}
                 <div className="absolute top-1 left-1 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {isPdf(file.key) && (
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-6 w-6 text-primary"
+                      onClick={() => handlePreviewPdf(file.key)}
+                    >
+                      <Eye className="w-3 h-3" />
+                    </Button>
+                  )}
                   <Button
                     size="icon"
                     variant="ghost"
