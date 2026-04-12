@@ -82,6 +82,7 @@ export default function FileBrowser({ providerId, onBack }: Props) {
   const [newFolderName, setNewFolderName] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [pdfPreview, setPdfPreview] = useState<{ url: string; name: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data, isLoading, refetch } = useListObjects(providerId, prefix);
