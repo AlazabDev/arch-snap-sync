@@ -577,6 +577,16 @@ export default function FileBrowser({ providerId, onBack }: Props) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* PDF Viewer */}
+      {pdfPreview && (
+        <PdfViewer
+          open={!!pdfPreview}
+          onOpenChange={(open) => !open && setPdfPreview(null)}
+          pdfUrl={pdfPreview.url}
+          fileName={pdfPreview.name}
+        />
+      )}
     </div>
   );
 }
