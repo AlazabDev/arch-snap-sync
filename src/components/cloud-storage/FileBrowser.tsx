@@ -41,6 +41,7 @@ import {
   Eye,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import PdfViewer from "./PdfViewer";
 
 interface Props {
   providerId: string;
